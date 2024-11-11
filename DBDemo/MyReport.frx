@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="11/11/2024 09:24:35" ReportInfo.Modified="11/11/2024 14:13:10" ReportInfo.CreatorVersion="2025.1.0.0">
+  <Dictionary>
+    <SQLiteDataConnection Name="Connection" ConnectionString="rijcmlqIltkgxALMArhJ2W63qXqywkdDoT5vzh4qH4kLRCOr2JoN7AvXRLHRaToJeDvdOqUuImxmtw3CtvF53CFQT1ADPADCZKH2tJAAWAJ/kF+hw/3dPpXH+le9kJ8ClN7/RNJ">
+      <TableDataSource Name="Employees" DataType="System.Int32" Enabled="true" TableName="Employees">
+        <Column Name="id" DataType="System.Int64"/>
+        <Column Name="name" DataType="System.String"/>
+        <Column Name="salary" DataType="System.Int64"/>
+        <Column Name="managerId" DataType="System.Int64"/>
+      </TableDataSource>
+    </SQLiteDataConnection>
+  </Dictionary>
+  <ReportPage Name="Page1" Watermark.Font="宋体, 60pt">
+    <ReportTitleBand Name="ReportTitle1" Width="718.2" Height="37.8">
+      <TextObject Name="Text1" Left="292.95" Top="9.45" Width="94.5" Height="18.9" Text="員工資料表" HorzAlign="Center" VertAlign="Center" Font="微软雅黑, 12pt"/>
+    </ReportTitleBand>
+    <PageHeaderBand Name="PageHeader1" Top="41.8" Width="718.2" Height="28.35"/>
+    <DataBand Name="Data1" Top="74.15" Width="718.2" Height="245.7">
+      <TextObject Name="Text2" Left="18.9" Top="37.8" Width="680.4" Height="47.25" Text="編號：[Employees.id]　姓名：[Employees.name]　薪水：[Employees.salary]　主管編號：[Employees.managerId]" VertAlign="Center" Font="微软雅黑, 12pt"/>
+      <TextObject Name="Text3" Top="9.45" Width="340.2" Height="18.9" Text="【⾮管理職(managerId不等於null)的⼈員】" VertAlign="Center" Font="微软雅黑, 12pt"/>
+      <TextObject Name="Text4" Top="103.95" Width="292.95" Height="18.9" Text="【⾮管理職且薪資⾼於該主管的⼈員】" VertAlign="Center" Font="微软雅黑, 12pt"/>
+      <TextObject Name="Text5" Left="18.9" Top="122.85" Width="680.4" Height="28.35" Text="姓名：[Employees.name]" VertAlign="Center" Font="微软雅黑, 12pt"/>
+    </DataBand>
+    <PageFooterBand Name="PageFooter1" Top="323.85" Width="718.2" Height="18.9"/>
+  </ReportPage>
+</Report>
