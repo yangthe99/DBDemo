@@ -14,55 +14,67 @@ namespace DBDemo
                 Console.WriteLine("報表模板檔案未找到！");
                 return;
             }
-
             try
             {
-                DataSet dataSet = new DataSet();
 
-                #region
-                //// 載入報表檔案 (假設報表檔案是 MyReport.frx)
-                //Report report = new Report();
-                //report.Load(reportFilePath);
+                // 載入報表檔案 (假設報表檔案是 MyReport.frx)
+                Report report = new Report();
+                report.Load(reportFilePath);
 
-                //// 假設這些是查詢出來的員工資料
-                //string connectionString = "Data Source=DBDemo.db;Version=3;"; //連線字串
-                //using (EmployeeService employeeService = new EmployeeService(connectionString))
-                //{
-                //    // 獲取有經理的員工資料
-                //    var employeesWithManager = employeeService.GetEmployeesWithManager();
+                // 假設這些是查詢出來的員工資料
+                string connectionString = "Data Source=DBDemo.db;Version=3;"; // 連線字串
+                using (EmployeeService employeeService = new EmployeeService(connectionString))
+                {
+                    //var employeesWithManager = employeeService.GetEmployeesWithManager();
+                    //var employeesWithGoodSalary = employeeService.GetEmployeesWithGoodSalary();
 
-                //    // 獲取高薪的員工資料
-                //    var employeesWithGoodSalary = employeeService.GetEmployeesWithGoodSalary();
+                    DataTable employeesWithManagerTable = employeeService.GetEmployeesWithManager();
+                    DataTable employeesWithGoodSalaryTable = employeeService.GetEmployeesWithGoodSalary();
+                    Console.WriteLine($"總共有 {employeesWithManagerTable.Rows.Count} 筆資料。");
+                    Console.WriteLine("【有主管(managerId)的員工】");
+                    foreach (DataRow employee in employeesWithManagerTable.Rows)
+                    {
+                        Console.WriteLine($"員工編號: {employee["id"]}, 名字: {employee["name"]}," +
+                                          $"薪水: {employee["salary"]}, 主管編號: {employee["managerId"]}");
+                    }
 
-                //    // 將資料轉換為 DataTable
-                //    //DataTable employeesDataTable = employeesWithManager.CopyToDataTable();
-                //    //DataTable goodSalaryDataTable = employeesWithGoodSalary.CopyToDataTable();
+                    Console.WriteLine($"總共有 {employeesWithGoodSalaryTable.Rows.Count} 筆資料。");
+                    Console.WriteLine("【薪水高於主管的員工】");
+                    foreach (DataRow employee in employeesWithGoodSalaryTable.Rows)
+                    {
+                        Console.WriteLine($"名字: {employee["name"]}");
+                    }
 
-                //    // 註冊資料源到報表中
-                //    report.RegisterData(employeesWithManager, "Employees"); // 註冊有經理的員工
-                //    report.RegisterData(employeesWithGoodSalary, "EmployeesWithGoodSalary"); // 註冊高薪員工
+                    // 註冊資料源
+                    report.RegisterData(employeesWithManagerTable, "employeesWithManager");
+                    report.RegisterData(employeesWithGoodSalaryTable, "employeesWithGoodSalary");
 
-                //    // 啟用資料源
-                //    report.GetDataSource("Employees").Enabled = true;
-                //    report.GetDataSource("EmployeesWithGoodSalary").Enabled = true;
-                //}
-                //report.Prepare();
-                //// 設定 PDF 輸出路徑
-                //string outputDirectory = AppDomain.CurrentDomain.BaseDirectory; // 執行檔目錄
-                //string pdfFilePath = Path.Combine(outputDirectory, "EmployeeReport.pdf");
+                    //report.RegisterData(employeesWithManager, "employeesWithManager");
+                    //report.RegisterData(employeesWithGoodSalary, "employeesWithGoodSalary");
 
-                //// 創建 PDF 匯出器
-                //PDFSimpleExport pdfExport = new PDFSimpleExport();
+                    // 啟用資料源
+                    report.GetDataSource("employeesWithManager").Enabled = true;
+                    report.GetDataSource("employeesWithGoodSalary").Enabled = true;
+                }
 
-                //// 將報表導出為 PDF
-                //report.Export(pdfExport, pdfFilePath);
+                // 準備報表
+                report.Prepare();
 
-                //// 顯示報表已成功生成
-                //Console.WriteLine($"報表已成功生成並保存在: {pdfFilePath}");
+                // 設定 PDF 輸出路徑
+                string outputDirectory = AppDomain.CurrentDomain.BaseDirectory; // 執行檔目錄
+                string pdfFilePath = Path.Combine(outputDirectory, "EmployeeReport.pdf");
 
-                //// 釋放報表資源
-                //report.Dispose();
-                #endregion
+                // 創建 PDF 匯出器
+                PDFSimpleExport pdfExport = new PDFSimpleExport();
+
+                // 將報表導出為 PDF
+                report.Export(pdfExport, pdfFilePath);
+
+                // 顯示報表已成功生成
+                Console.WriteLine($"報表已成功生成並保存在: {pdfFilePath}");
+
+                // 釋放報表資源
+                report.Dispose();
             }
             catch (Exception ex)
             {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Data.Entity.Migrations.Model;
 using System.Data.SQLite;
 using System.Linq;
@@ -21,10 +23,7 @@ namespace DBDemo
         /// </summary>
         private readonly SQLiteConnection _Connection;
 
-        /// <summary>
-        /// 員工資料列表
-        /// </summary>
-        private List<Employee> _Employees;
+        private DataTable _Employee;
 
         /// <summary>
         /// EmployeeService建構子，取得連線字串並開啟連線
@@ -34,7 +33,7 @@ namespace DBDemo
         {
             _Connection = new SQLiteConnection(connectionString);
             _Connection.Open(); //自動開啟資料庫連線
-            _Employees = new List<Employee>();
+            _Employee = new DataTable();
         }
 
         /// <summary>
@@ -93,48 +92,63 @@ namespace DBDemo
         /// 取得⾮管理職(managerId不等於null)的⼈員
         /// </summary>
         /// <returns></returns>
-        public List<Employee> GetEmployeesWithManager()
+        public DataTable GetEmployeesWithManager()
         {
             try
             {
-                return _Employees.Where(e => !string.IsNullOrEmpty(e.ManagerId)).ToList();
+                // @""預防SQL Injection
+                string queryString = @"
+                SELECT * FROM Employees 
+                WHERE managerId IS NOT NULL";
 
+                var employees = _Connection.Query<Employee>(queryString).ToList();
+                // 將 List<Employee> 轉換為 DataTable
+                return ConvertToDataTable(employees); // 使用 ConvertToDataTable 方法將 List 轉換成 DataTable
             }
             catch (SQLiteException ex)
             {
                 Console.WriteLine($"資料庫錯誤：{ex.Message}");
-                return new List<Employee>(); // 發生錯誤，回傳空列表
+                return new DataTable(); // 發生錯誤，回傳空列表
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"發生未知錯誤：{ex.Message}");
-                return new List<Employee>(); // 發生未知錯誤，回傳空列表
+                return new DataTable(); // 發生未知錯誤，回傳空列表
             }
         }
         /// <summary>
         /// 取得⾮管理職且薪資⾼於該主管的⼈員
         /// </summary>
         /// <returns></returns>
-        public List<Employee> GetEmployeesWithGoodSalary()
+        public DataTable GetEmployeesWithGoodSalary()
         {
             try
             {
-                var employeesWithGoodSalary = from e in _Employees
-                                              join m in _Employees on e.ManagerId equals m.Id.ToString() // 轉換 m.Id 為 string 類型
-                                              where e.Salary > m.Salary
-                                              select e;
+                string queryString = @"
+                SELECT e.name
+                FROM Employees e
+                LEFT JOIN Employees m ON e.managerId = m.id
+                WHERE e.managerId IS NOT NULL
+                AND e.salary > m.salary";
+                var employees = _Connection.Query<Employee>(queryString).ToList();
+                // 將 List<Employee> 轉換為 DataTable
+                return ConvertToDataTable(employees); // 使用 ConvertToDataTable 方法將 List 轉換成 DataTable
 
-                return employeesWithGoodSalary.ToList();
+                // e join m, e的主管ID是m的ID, 找出含有以下條件的e
+                // 1: e表ID有主管的人
+                // 2: e表ID的薪水比主管(m表ID)的薪水多
+
+                // 查詢語句如果僅寫e.name，Employee的其餘屬性(Id, Salary, ManagerId)將會是預設值（0 或 null）。
             }
             catch (SQLiteException ex)
             {
                 Console.WriteLine($"資料庫錯誤：{ex.Message}");
-                return new List<Employee>(); // 發生錯誤，回傳空列表
+                return new DataTable(); // 發生錯誤，回傳空列表
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"發生未知錯誤：{ex.Message}");
-                return new List<Employee>(); // 發生未知錯誤，回傳空列表
+                return new DataTable(); // 發生未知錯誤，回傳空列表
             }
         }
         /// <summary>
@@ -144,6 +158,40 @@ namespace DBDemo
         {
             _Connection.Close();  // 在Service結束時關閉連線
             _Connection.Dispose(); // 釋放資源
+        }
+
+        /// <summary>
+        /// 將 List<Employee> 轉換為 DataTable
+        /// </summary>
+        /// <param name="employees">員工列表</param>
+        /// <returns>DataTable</returns>
+        public DataTable ConvertToDataTable(List<Employee> employees)
+        {
+            DataTable dataTable = new DataTable();
+
+            // 檢查員工列表是否為空
+            if (employees != null && employees.Count > 0)
+            {
+                // 動態生成 DataTable 的列名稱，這裡假設 Employee 類別有 Id、Name 和 ManagerId 屬性
+                var properties = typeof(Employee).GetProperties();
+                foreach (var property in properties)
+                {
+                    dataTable.Columns.Add(property.Name, property.PropertyType);
+                }
+
+                // 迭代 List<Employee>，並將每個員工的資料填充到 DataTable 中
+                foreach (var employee in employees)
+                {
+                    var row = dataTable.NewRow();
+                    foreach (var property in properties)
+                    {
+                        row[property.Name] = property.GetValue(employee) ?? DBNull.Value;
+                    }
+                    dataTable.Rows.Add(row);
+                }
+            }
+
+            return dataTable;
         }
     }
 }

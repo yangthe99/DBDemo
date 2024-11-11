@@ -14,18 +14,19 @@
       <TextObject Name="Text11" Left="340.2" Width="94.5" Height="18.9" Text="薪　　水" VertAlign="Center" Font="微軟正黑體, 12pt"/>
       <TextObject Name="Text13" Left="500.85" Width="94.5" Height="18.9" Text="主管編號" VertAlign="Center" Font="微軟正黑體, 12pt"/>
     </PageHeaderBand>
-	  
-    <DataBand Name="Data1" Top="74.15" Width="718.2" Height="122.85" DataSource="Employees">
-      <TextObject Name="Text6" Left="66.15" Top="28.35" Width="94.5" Height="18.9" Text="[Employees.id]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
-      <TextObject Name="Text8" Left="198.45" Top="28.35" Width="94.5" Height="18.9" Text="[Employees.name]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
-      <TextObject Name="Text10" Left="340.2" Top="28.35" Width="94.5" Height="18.9" Text="[Employees.salary]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
-      <TextObject Name="Text12" Left="500.85" Top="28.35" Width="94.5" Height="18.9" Text="[Employees.managerId]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
-    </DataBand>
 
-	  <DataBand Name="Data1" Top="74.15" Width="718.2" Height="122.85" DataSource="EmployeesWithGoodSalary">
-		  <TextObject Name="Text8" Left="198.45" Top="28.35" Width="94.5" Height="18.9" Text="[Employees.name]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
+	  <!-- 使用第一個資料源 "employeesWithManager" -->
+	  <DataBand Name="Data1" Top="74.15" Width="718.2" Height="122.85" DataSource="employeesWithManager">
+		  <TextObject Name="Text6" Left="66.15" Top="28.35" Width="94.5" Height="18.9" Text="[employeesWithManager.id]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
+		  <TextObject Name="Text8" Left="198.45" Top="28.35" Width="94.5" Height="18.9" Text="[employeesWithManager.name]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
+		  <TextObject Name="Text10" Left="340.2" Top="28.35" Width="94.5" Height="18.9" Text="[employeesWithManager.salary]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
+		  <TextObject Name="Text12" Left="500.85" Top="28.35" Width="94.5" Height="18.9" Text="[employeesWithManager.managerId]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
 	  </DataBand>
-	  
+
+	  <!-- 使用第二個資料源 "employeesWithGoodSalary" -->
+	  <DataBand Name="Data2" Top="74.15" Width="718.2" Height="122.85" DataSource="employeesWithGoodSalary">
+		  <TextObject Name="Text8" Left="198.45" Top="28.35" Width="94.5" Height="18.9" Text="[employeesWithGoodSalary.name]" VertAlign="Center" Font="微軟正黑體, 12pt"/>
+	  </DataBand>	  
 	  
     <PageFooterBand Name="PageFooter1" Top="201" Width="718.2" Height="18.9"/>
   </ReportPage>
