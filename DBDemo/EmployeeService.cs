@@ -22,6 +22,11 @@ namespace DBDemo
         private readonly SQLiteConnection _Connection;
 
         /// <summary>
+        /// 員工資料列表
+        /// </summary>
+        private List<Employee> _Employees;
+
+        /// <summary>
         /// EmployeeService建構子，取得連線字串並開啟連線
         /// </summary>
         /// <param name="connectionString"></param>
@@ -29,6 +34,7 @@ namespace DBDemo
         {
             _Connection = new SQLiteConnection(connectionString);
             _Connection.Open(); //自動開啟資料庫連線
+            _Employees = new List<Employee>();
         }
 
         /// <summary>
@@ -91,11 +97,8 @@ namespace DBDemo
         {
             try
             {
-                // @""預防SQL Injection
-                string queryString = @"
-                SELECT * FROM Employees 
-                WHERE managerId IS NOT NULL";
-                return _Connection.Query<Employee>(queryString).ToList();
+                return _Employees.Where(e => !string.IsNullOrEmpty(e.ManagerId)).ToList();
+
             }
             catch (SQLiteException ex)
             {
@@ -116,18 +119,12 @@ namespace DBDemo
         {
             try
             {
-                string queryString = @"
-                SELECT e.name
-                FROM Employees e
-                LEFT JOIN Employees m ON e.managerId = m.id
-                WHERE e.managerId IS NOT NULL
-                AND e.salary > m.salary";
-                return _Connection.Query<Employee>(queryString).ToList();
-                // e join m, e的主管ID是m的ID, 找出含有以下條件的e
-                // 1: e表ID有主管的人
-                // 2: e表ID的薪水比主管(m表ID)的薪水多
+                var employeesWithGoodSalary = from e in _Employees
+                                              join m in _Employees on e.ManagerId equals m.Id.ToString() // 轉換 m.Id 為 string 類型
+                                              where e.Salary > m.Salary
+                                              select e;
 
-                // 查詢語句如果僅寫e.name，Employee的其餘屬性(Id, Salary, ManagerId)將會是預設值（0 或 null）。
+                return employeesWithGoodSalary.ToList();
             }
             catch (SQLiteException ex)
             {
