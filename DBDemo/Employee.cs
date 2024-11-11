@@ -16,7 +16,7 @@
         /// <summary>
         /// 員工薪水
         /// </summary>
-        public string Salary { get; set; }
+        public decimal Salary { get; set; }
         /// <summary>
         /// 主管編號
         /// </summary>
