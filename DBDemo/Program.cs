@@ -17,7 +17,7 @@ namespace DBDemo
             try
             {
 
-                // 載入報表檔案 (假設報表檔案是 MyReport.frx)
+                // 載入報表檔案
                 Report report = new Report();
                 report.Load(reportFilePath);
 

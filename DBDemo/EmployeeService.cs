@@ -180,36 +180,81 @@ namespace DBDemo
         /// <param name="employees">員工列表</param>
         /// <returns>DataTable</returns>
         public DataTable ConvertToDataTable(List<Employee> employees)
+            // 手動映射：簡單直接，性能優越，適合已知類型結構的情況。
         {
             DataTable dataTable = new DataTable();
 
-            // 檢查員工列表是否為空
-            if (employees != null && employees.Count > 0)
+
+            // 手動添加列
+            dataTable.Columns.Add("Id", typeof(int));
+            dataTable.Columns.Add("Name", typeof(string));
+            dataTable.Columns.Add("Salary", typeof(int));
+            dataTable.Columns.Add("ManagerId", typeof(int));
+
+            // 填充資料列
+            foreach (var employee in employees)
             {
-                // 動態生成 DataTable 的列名稱，這裡假設 Employee 類別有 Id、Name 和 ManagerId 屬性
-                var properties = typeof(Employee).GetProperties();
-                foreach (var property in properties)
-                {
-                    dataTable.Columns.Add(property.Name, property.PropertyType);
-                }
+                var row = dataTable.NewRow();
 
-                // 迭代 List<Employee>，並將每個員工的資料填充到 DataTable 中
-                foreach (var employee in employees)
-                {
-                    var row = dataTable.NewRow();
-                    foreach (var property in properties)
-                    {
-                        row[property.Name] = property.GetValue(employee) ?? DBNull.Value;
-                    }
-                    dataTable.Rows.Add(row);
-                }
+                row["Id"] = employee.Id;
+                row["Name"] = employee.Name;
+                row["Salary"] = employee.Salary;
+                // ManagerId有值的話取值，否則是空值。
+                // DataTable 需要 object 類型來存儲欄位資料，資料型別與目標欄位型別不匹配（例如，int? 轉換為 object）時須轉型。
+                row["ManagerId"] = employee.ManagerId.HasValue ? (object)employee.ManagerId.Value : DBNull.Value;
+              
+                dataTable.Rows.Add(row);
             }
-
             return dataTable;
         }
+        // 使用反射：最靈活，但會影響性能，適合結構動態的情況。
+        #region
+        //public DataTable ConvertToDataTable(List<Employee> employees)
+        //{
+        //    DataTable dataTable = new DataTable();
+
+        //    // 檢查員工列表有資料，且至少有一筆資料
+        //    if (employees != null && employees.Count > 0)
+        //    {
+        //        // typeof(Employee).GetProperties(): 使用反射（Reflection[註1]）來獲取 Employee 類型的所有屬性。
+        //        // 會返回一個包含所有屬性的 properties 物件的陣列，包含像 Id、Name、ManagerId 等屬性。
+        //        var properties = typeof(Employee).GetProperties();
+
+        //        foreach (var property in properties)
+        //        {
+        //            // dataTable新增欄位(欄位名稱=屬性名稱, 欄位的資料類型=屬性資料的類型)。
+        //            dataTable.Columns.Add(property.Name, property.PropertyType);
+        //        }
+
+        //        // 迭代 List<Employee>，並將每個員工的資料寫入到 DataTable 中
+        //        // 每個員工物件將轉換為 DataTable 的一行（DataRow）
+        //        foreach (var employee in employees)
+        //        {
+        //            // (為每個員工)創建一個新的資料列（DataRow）。
+        //            // NewRow() 會創建一個空的資料列，資料列欄位結構與前面 DataTable 中定義的欄位結構相同。
+        //            var row = dataTable.NewRow();
+
+        //            // 將屬性對應的值寫入到row
+        //            foreach (var property in properties)
+        //            {
+        //                // row的欄位名稱=employee對應名稱的值
+        //                // ?? DBNull.Value: 用來處理可能為 null 的屬性。
+        //                // 如果該屬性值為 null，將 DBNull.Value 賦給資料列對應的欄位，以表示「空值」。
+        //                row[property.Name] = property.GetValue(employee) ?? DBNull.Value;
+        //            }
+        //            // 將寫入好資料的 row 加入到 DataTable
+        //            dataTable.Rows.Add(row);
+        //        }
+        //    }
+        //    return dataTable;
+        //}
+        #endregion
     }
 }
 // Execute()：主要用來執行INSERT、UPDATE、DELETE 或者 CREATE 等操作。
 // Query()：執行 SELECT 查詢並返回資料，Dapper 會返回一個 IEnumerable<Employee> 類型的集合。
 //          IEnumerable<> 用於延遲加載(需要數據時加載)，透過 foreach 遍歷集合。
 // .ToList()：將查詢結果轉換成 List<> 。
+
+// 註1: 反射 (typeof(Employee).GetProperties())：
+// 動態獲取 Employee 類的屬性，使得方法能夠處理不同屬性的 Employee 類。
