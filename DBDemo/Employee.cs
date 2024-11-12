@@ -16,10 +16,10 @@
         /// <summary>
         /// 員工薪水
         /// </summary>
-        public decimal Salary { get; set; }
+        public int Salary { get; set; }
         /// <summary>
         /// 主管編號
         /// </summary>
-        public string ManagerId { get; set; }
+        public int ManagerId { get; set; }
     }
 }
