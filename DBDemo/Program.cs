@@ -8,23 +8,28 @@ namespace DBDemo
     {
         static void Main(string[] args)
         {
+            // reportFilePath=應用程式執行的根目錄\MyReport.frx
+            // Path.Combine：將多個路徑組合成一個單一的路徑
             string reportFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MyReport.frx");
+           
+            // 檢查檔案存在
             if (!File.Exists(reportFilePath))
             {
                 Console.WriteLine("報表模板檔案未找到！");
                 return;
             }
+
             try
             {
-
-                // 載入報表檔案
                 Report report = new Report();
-                report.Load(reportFilePath);
+                report.Load(reportFilePath); // 載入報表檔案
 
-                // 假設這些是查詢出來的員工資料
                 string connectionString = "Data Source=DBDemo.db;Version=3;"; // 連線字串
                 using (EmployeeService employeeService = new EmployeeService(connectionString))
                 {
+                    employeeService.CreateTable(); //建立資料表
+                    employeeService.InsertEmployees(); //寫入員工資料
+
                     // 測試用(AllEmployee)
                     #region
                     //DataTable empAll = employeeService.GetAllEmployee();
@@ -39,7 +44,9 @@ namespace DBDemo
                     //report.GetDataSource("empAll").Enabled = true;
                     #endregion
 
+                    // 取得有主管(managerId)的員工
                     DataTable employeesWithManagerTable = employeeService.GetEmployeesWithManager();
+                    // 取得薪水高於主管的員工
                     DataTable employeesWithGoodSalaryTable = employeeService.GetEmployeesWithGoodSalary();
 
                     // 檢查用
@@ -60,35 +67,41 @@ namespace DBDemo
                     }
                     #endregion
 
-                    // 註冊資料源
+                    // 註冊資料源RegisterData(資料源DataSource, 資料名稱DataName)
                     report.RegisterData(employeesWithManagerTable, "employeesWithManager");
                     report.RegisterData(employeesWithGoodSalaryTable, "employeesWithGoodSalary");
 
                     // 啟用資料源
+                    // GetDataSource(資料名稱DataName).啟用狀態
                     report.GetDataSource("employeesWithManager").Enabled = true;
                     report.GetDataSource("employeesWithGoodSalary").Enabled = true;
                 }
+
+                // 資料帶與資料源的綁定
+                // ((DataBand): 轉換為 DataBand 類型
+                // report.Report: 表示報表的結構。例如資料帶、文字、圖片等都可以從 report.Report 來訪問。
+                // FindObject("")): 查找報表中名為 "" 的物件
+                // .DataSource: 資料源
                  ((DataBand)report.Report.FindObject("Data1")).DataSource = report.GetDataSource("employeesWithManager");
                  ((DataBand)report.Report.FindObject("Data2")).DataSource = report.GetDataSource("employeesWithGoodSalary");
 
-                // 準備報表
+                // 準備報表，處理報表中的資料綁定、格式設置等
                 report.Prepare();
 
-                // 設定 PDF 輸出路徑
-                string outputDirectory = AppDomain.CurrentDomain.BaseDirectory; // 執行檔目錄
+                string outputDirectory = @"C:\DBDemo"; // 設定 PDF 輸出路徑
+                if (!Directory.Exists(outputDirectory)) // 檢查路徑資料夾是否存在
+                    Directory.CreateDirectory(outputDirectory); // 資料夾不存在的話新增
+                // C:\DBDemo\EmployeeReport.pdf
                 string pdfFilePath = Path.Combine(outputDirectory, "EmployeeReport.pdf");
 
                 // 創建 PDF 匯出器
                 PDFSimpleExport pdfExport = new PDFSimpleExport();
 
-                // 將報表導出為 PDF
-                report.Export(pdfExport, pdfFilePath);
-
-                // 顯示報表已成功生成
+                // 將報表內容匯出為 PDF，並保存到指定的 pdfFilePath 路徑
+                report.Export(pdfExport, pdfFilePath); 
                 Console.WriteLine($"報表已成功生成並保存在: {pdfFilePath}");
 
-                // 釋放報表資源
-                report.Dispose();
+                report.Dispose();  // 釋放報表資源
             }
             catch (Exception ex)
             {

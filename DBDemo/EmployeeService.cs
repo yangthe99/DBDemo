@@ -95,7 +95,8 @@ namespace DBDemo
         /// (測試用)取得所有員工
         /// </summary>
         /// <returns></returns>
-        public DataTable GetAllEmployee() {
+        public DataTable GetAllEmployee()
+        {
             string queryString = @"
                 SELECT * FROM Employees";
             var employees = _Connection.Query<Employee>(queryString).ToList();
@@ -179,35 +180,41 @@ namespace DBDemo
         /// </summary>
         /// <param name="employees">員工列表</param>
         /// <returns>DataTable</returns>
+        // 手動映射寫法：簡單直接，!!適合已知類型結構的情況!!。
         public DataTable ConvertToDataTable(List<Employee> employees)
-            // 手動映射：簡單直接，性能優越，適合已知類型結構的情況。
         {
             DataTable dataTable = new DataTable();
 
-
-            // 手動添加列
+            // 手動添加欄位
             dataTable.Columns.Add("Id", typeof(int));
             dataTable.Columns.Add("Name", typeof(string));
             dataTable.Columns.Add("Salary", typeof(int));
             dataTable.Columns.Add("ManagerId", typeof(int));
 
-            // 填充資料列
-            foreach (var employee in employees)
+            if (employees != null && employees.Count > 0)
             {
-                var row = dataTable.NewRow();
+                // 填充資料列
+                foreach (var employee in employees)
+                {
+                    // NewRow() 會創建一個空的Row，欄位結構與前面 DataTable 中定義的欄位結構相同。
+                    var row = dataTable.NewRow();
 
-                row["Id"] = employee.Id;
-                row["Name"] = employee.Name;
-                row["Salary"] = employee.Salary;
-                // ManagerId有值的話取值，否則是空值。
-                // DataTable 需要 object 類型來存儲欄位資料，資料型別與目標欄位型別不匹配（例如，int? 轉換為 object）時須轉型。
-                row["ManagerId"] = employee.ManagerId.HasValue ? (object)employee.ManagerId.Value : DBNull.Value;
-              
-                dataTable.Rows.Add(row);
+                    //將每個員工的資料個別寫入 row對應的欄位
+                    row["Id"] = employee.Id;
+                    row["Name"] = employee.Name;
+                    row["Salary"] = employee.Salary;
+                    // ManagerId有值? 取值:否則是空值。
+                    // DataTable 需要 object 類型來存儲欄位資料，資料型別與目標欄位型別不匹配（例如，int? 轉換為 object）時須轉型。
+                    row["ManagerId"] = employee.ManagerId.HasValue ? (object)employee.ManagerId.Value : DBNull.Value;
+
+                    // 將寫入資料的 row 加入到 DataTable
+                    dataTable.Rows.Add(row);
+                }
             }
             return dataTable;
         }
-        // 使用反射：最靈活，但會影響性能，適合結構動態的情況。
+
+        // 反射寫法：最靈活，但會影響性能，適合結構動態的情況。
         #region
         //public DataTable ConvertToDataTable(List<Employee> employees)
         //{
