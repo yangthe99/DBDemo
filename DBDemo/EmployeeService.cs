@@ -23,6 +23,9 @@ namespace DBDemo
         /// </summary>
         private readonly SQLiteConnection _Connection;
 
+        /// <summary>
+        /// 儲存Datatable用
+        /// </summary>
         private DataTable _Employee;
 
         /// <summary>
@@ -87,6 +90,17 @@ namespace DBDemo
             {
                 Console.WriteLine($"發生未知錯誤：{ex.Message}");
             }
+        }
+        /// <summary>
+        /// (測試用)取得所有員工
+        /// </summary>
+        /// <returns></returns>
+        public DataTable GetAllEmployee() {
+            string queryString = @"
+                SELECT * FROM Employees";
+            var employees = _Connection.Query<Employee>(queryString).ToList();
+            // 將 List<Employee> 轉換為 DataTable
+            return ConvertToDataTable(employees); // 使用 ConvertToDataTable 方法將 List 轉換成 DataTable
         }
         /// <summary>
         /// 取得⾮管理職(managerId不等於null)的⼈員
@@ -156,7 +170,7 @@ namespace DBDemo
         /// </summary>
         public void Dispose()
         {
-            _Connection.Close();  // 在Service結束時關閉連線
+            //_Connection.Close();  // 在Service結束時關閉連線
             _Connection.Dispose(); // 釋放資源
         }
 

@@ -25,11 +25,25 @@ namespace DBDemo
                 string connectionString = "Data Source=DBDemo.db;Version=3;"; // 連線字串
                 using (EmployeeService employeeService = new EmployeeService(connectionString))
                 {
-                    //var employeesWithManager = employeeService.GetEmployeesWithManager();
-                    //var employeesWithGoodSalary = employeeService.GetEmployeesWithGoodSalary();
+                    // 測試用(AllEmployee)
+                    #region
+                    //DataTable empAll = employeeService.GetAllEmployee();
+                    //Console.WriteLine($"總共有 {empAll.Rows.Count} 筆資料。");
+                    //Console.WriteLine("【有主管(managerId)的員工】");
+                    //foreach (DataRow employee in empAll.Rows)
+                    //{
+                    //    Console.WriteLine($"員工編號: {employee["id"]}, 名字: {employee["name"]}," +
+                    //                      $"薪水: {employee["salary"]}, 主管編號: {employee["managerId"]}");
+                    //}
+                    //report.RegisterData(empAll, "empAll");
+                    //report.GetDataSource("empAll").Enabled = true;
+                    #endregion
 
                     DataTable employeesWithManagerTable = employeeService.GetEmployeesWithManager();
                     DataTable employeesWithGoodSalaryTable = employeeService.GetEmployeesWithGoodSalary();
+
+                    // 檢查用
+                    #region
                     Console.WriteLine($"總共有 {employeesWithManagerTable.Rows.Count} 筆資料。");
                     Console.WriteLine("【有主管(managerId)的員工】");
                     foreach (DataRow employee in employeesWithManagerTable.Rows)
@@ -44,18 +58,18 @@ namespace DBDemo
                     {
                         Console.WriteLine($"名字: {employee["name"]}");
                     }
+                    #endregion
 
                     // 註冊資料源
                     report.RegisterData(employeesWithManagerTable, "employeesWithManager");
                     report.RegisterData(employeesWithGoodSalaryTable, "employeesWithGoodSalary");
 
-                    //report.RegisterData(employeesWithManager, "employeesWithManager");
-                    //report.RegisterData(employeesWithGoodSalary, "employeesWithGoodSalary");
-
                     // 啟用資料源
                     report.GetDataSource("employeesWithManager").Enabled = true;
                     report.GetDataSource("employeesWithGoodSalary").Enabled = true;
                 }
+                 ((DataBand)report.Report.FindObject("Data1")).DataSource = report.GetDataSource("employeesWithManager");
+                 ((DataBand)report.Report.FindObject("Data2")).DataSource = report.GetDataSource("employeesWithGoodSalary");
 
                 // 準備報表
                 report.Prepare();
